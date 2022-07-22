@@ -82,7 +82,7 @@ class MirrorListener(listeners.MirrorListeners):
                 with download_dict_lock:
                     download_dict[self.uid] = ZipStatus(name, m_path, size)
                 pswd = self.pswd
-                path = m_path + ".zip"
+                path = f"{m_path}.zip"
                 LOGGER.info(f'Zip: orig_path: {m_path}, zip_path: {path}')
                 if pswd is not None:
                     subprocess.run(["7z", "a", "-mx=0", f"-p{pswd}", path, m_path])
@@ -366,18 +366,20 @@ def _mirror(bot, update, isTar=False, extract=False, isZip=False, isQbit=False):
     link = link.strip()
     reply_to = update.message.reply_to_message
     if reply_to is not None:
-        file = None
         media_array = [reply_to.document, reply_to.video, reply_to.audio]
-        for i in media_array:
-            if i is not None:
-                file = i
-                break
+        file = next((i for i in media_array if i is not None), None)
         if (
             not bot_utils.is_url(link)
             and not bot_utils.is_magnet(link)
             or len(link) == 0
-        ) and file is not None:
-            if isQbit:
+        ):
+            if file is None:
+                reply_text = reply_to.text
+                reply_text = re.split('\n ', reply_text)[0]
+                if bot_utils.is_url(reply_text) or bot_utils.is_magnet(reply_text):
+                    link = reply_text
+
+            elif isQbit:
                 file_name = str(time.time()).replace(".", "") + ".torrent"
                 file.get_file().download(custom_path=f"{file_name}")
                 link = f"{file_name}"
@@ -389,16 +391,6 @@ def _mirror(bot, update, isTar=False, extract=False, isZip=False, isQbit=False):
                 return
             else:
                 link = file.get_file().file_path
-        elif (
-              not bot_utils.is_url(link)
-              and not bot_utils.is_magnet(link)
-              or len(link) == 0
-        ) and file is None:
-            reply_text = reply_to.text
-            reply_text = re.split('\n ', reply_text)[0]
-            if bot_utils.is_url(reply_text) or bot_utils.is_magnet(reply_text):
-                link = reply_text
-
     if bot_utils.is_url(link) and not bot_utils.is_magnet(link) and not os.path.exists(link) and isQbit:
         resp = requests.get(link)
         if resp.status_code == 200:
@@ -406,7 +398,7 @@ def _mirror(bot, update, isTar=False, extract=False, isZip=False, isQbit=False):
             open(file_name, "wb").write(resp.content)
             link = f"{file_name}"
         else:
-            sendMessage("ERROR: link got HTTP response:" + resp.status_code, bot, update)
+            sendMessage(f"ERROR: link got HTTP response:{resp.status_code}", bot, update)
             return
 
     elif not bot_utils.is_url(link) and not bot_utils.is_magnet(link):

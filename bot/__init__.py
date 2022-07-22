@@ -142,14 +142,14 @@ try:
     for chats in schats:
         SUDO_USERS.add(int(chats))
 except:
-    pass   
+    pass
 try:
     BOT_TOKEN = getConfig('BOT_TOKEN')
     CHAT_NAME = getConfig('CHAT_NAME')
     parent_id = getConfig('GDRIVE_FOLDER_ID')
     DOWNLOAD_DIR = getConfig('DOWNLOAD_DIR')
     if not DOWNLOAD_DIR.endswith("/"):
-        DOWNLOAD_DIR = DOWNLOAD_DIR + '/'
+        DOWNLOAD_DIR = f'{DOWNLOAD_DIR}/'
     DOWNLOAD_STATUS_UPDATE_INTERVAL = int(getConfig('DOWNLOAD_STATUS_UPDATE_INTERVAL'))
     OWNER_ID = int(getConfig('OWNER_ID'))
     AUTO_DELETE_MESSAGE_DURATION = int(getConfig('AUTO_DELETE_MESSAGE_DURATION'))
@@ -345,7 +345,7 @@ try:
     INIT_FEEDS = getConfig('INIT_FEEDS')
     CUSTOM_MESSAGES = getConfig('CUSTOM_MESSAGES')        
 except:
-    pass 
+    pass
 try:
     BASE_URL = getConfig('BASE_URL_OF_BOT')
     if len(BASE_URL) == 0:
@@ -432,7 +432,7 @@ if os.path.exists('drive_folder'):
                 INDEX_URLS.append(temp[2])
             except IndexError as e:
                 INDEX_URLS.append(None)
-                
+
 SEARCH_PLUGINS = os.environ.get('SEARCH_PLUGINS', None)
 if SEARCH_PLUGINS is not None:
     SEARCH_PLUGINS = json.loads(SEARCH_PLUGINS)
